@@ -7,7 +7,6 @@ import com.venky.swf.db.extensions.BeforeModelValidateExtension;
 import com.venky.swf.db.model.UserEmail;
 import com.venky.swf.plugins.collab.db.model.user.Phone;
 import com.venky.swf.plugins.collab.db.model.user.UserPhone;
-import com.venky.swf.plugins.mobilesignup.db.model.DeviceUuid;
 import com.venky.swf.plugins.mobilesignup.db.model.User;
 import com.venky.swf.plugins.sequence.db.model.SequentialNumber;
 
@@ -64,20 +63,5 @@ public class BeforeValidateUser extends BeforeModelValidateExtension<User> {
                 model.setLastPrimaryPhoneNumber(model.getPhoneNumber());
             }
         }
-
-        /*
-            The first phone number is validated with otp as part of sign up. So the user phone can be inserted after the user's insert.
-        */
-        if (model.getRawRecord().isFieldDirty("DEVICE_ID") && !model.getRawRecord().isNewRecord()){
-            DeviceUuid uuid = Database.getTable(DeviceUuid.class).newRecord();
-            uuid.setDeviceUuid(model.getDeviceId());
-            uuid.setUserId(model.getId());
-            uuid = Database.getTable(DeviceUuid.class).getRefreshed(uuid);
-            if (uuid.getRawRecord().isNewRecord()){
-                uuid.save();
-            }
-        }
-
-
     }
 }

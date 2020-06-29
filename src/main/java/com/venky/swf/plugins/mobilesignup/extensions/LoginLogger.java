@@ -4,10 +4,12 @@ import com.venky.extension.Extension;
 import com.venky.extension.Registry;
 import com.venky.swf.db.Database;
 import com.venky.swf.db.model.Model;
+import com.venky.swf.path.Path;
 import com.venky.swf.path._IPath;
 import com.venky.swf.plugins.background.core.Task;
 import com.venky.swf.plugins.background.core.TaskManager;
 import com.venky.swf.plugins.mobilesignup.db.model.User;
+import com.venky.swf.plugins.mobilesignup.db.model.UserLogin;
 
 import java.sql.Timestamp;
 
@@ -17,22 +19,32 @@ public class LoginLogger implements Extension {
     }
     @Override
     public void invoke(Object... objects) {
-        User user = ((Model)objects[0]).getRawRecord().getAsProxy(User.class);
-        TaskManager.instance().executeAsync(new UserLoginLogger(user.getId()));
+        Path path = (Path)objects[0];
+        User user = ((Model)objects[1]).getRawRecord().getAsProxy(User.class);
+        TaskManager.instance().executeAsync(new UserLoginLogger(path,user),false);
     }
 
     public static class UserLoginLogger implements Task {
-        long userId ;
-        public UserLoginLogger(long id){
-            this.userId = id;
+        User user;
+        String remoteHost;
+        String userAgent;
+        public UserLoginLogger(Path path, User user){
+            this.user = user;
+            remoteHost = path.getRequest().getRemoteHost();
+            userAgent = path.getHeader("User-Agent");
         }
 
         @Override
         public void execute() {
-            User user = Database.getTable(User.class).get(userId);
+            UserLogin login = Database.getTable(UserLogin.class).newRecord();
             if (user != null){
-                user.setLastLoginTime(new Timestamp(System.currentTimeMillis()));
-                user.save();
+                login.setLoginTime(new Timestamp(System.currentTimeMillis()));
+                login.setUserId(user.getId());
+                login.setLat(user.getCurrentLat());
+                login.setLng(user.getCurrentLng());
+                login.setUserAgent(userAgent);
+                login.setFromIp(remoteHost);
+                login.save();
             }
 
         }

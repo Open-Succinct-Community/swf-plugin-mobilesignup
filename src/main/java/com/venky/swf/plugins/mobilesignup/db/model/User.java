@@ -1,5 +1,6 @@
 package com.venky.swf.plugins.mobilesignup.db.model;
 
+import com.venky.swf.db.annotations.column.IS_VIRTUAL;
 import com.venky.swf.db.annotations.column.UNIQUE_KEY;
 import com.venky.swf.db.annotations.column.ui.HIDDEN;
 
@@ -15,11 +16,14 @@ public interface User extends in.succinct.plugins.ecommerce.db.model.participati
     String getLastPrimaryPhoneNumber();
     void setLastPrimaryPhoneNumber(String lastPrimaryPhoneNumber);
 
-    String getDeviceId();
-    void setDeviceId(String deviceId);
 
+    @IS_VIRTUAL
     Timestamp getLastLoginTime();
-    void setLastLoginTime(Timestamp lastLoginTime);
 
-    List<DeviceUuid> getDeviceUuids();
+    @IS_VIRTUAL
+    boolean isActive();
+
+
+    @IS_VIRTUAL
+    void deactivate();
 }

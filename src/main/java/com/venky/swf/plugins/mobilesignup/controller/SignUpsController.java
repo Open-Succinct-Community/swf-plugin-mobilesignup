@@ -1,11 +1,13 @@
 package com.venky.swf.plugins.mobilesignup.controller;
 
 import com.venky.swf.controller.annotations.RequireLogin;
+import com.venky.swf.db.Database;
 import com.venky.swf.db.model.Model;
 import com.venky.swf.integration.IntegrationAdaptor;
 import com.venky.swf.integration.api.HttpMethod;
 import com.venky.swf.path.Path;
 import com.venky.swf.plugins.collab.controller.OtpEnabledController;
+import com.venky.swf.plugins.collab.db.model.user.Phone;
 import com.venky.swf.plugins.mobilesignup.db.model.SignUp;
 import com.venky.swf.plugins.mobilesignup.db.model.User;
 import com.venky.swf.views.View;
@@ -38,7 +40,11 @@ public class SignUpsController extends OtpEnabledController<SignUp> {
             throw new RuntimeException("Parameter not correct. Parameter must be a single SignUp element");
         }
         SignUp signUp = signUpList.get(0);
+        signUp.setPhoneNumber(Phone.sanitizePhoneNumber(signUp.getPhoneNumber()));
+
+        signUp = Database.getTable(SignUp.class).getRefreshed(signUp);
         signUp.save();
+
         boolean validated = signUp.isValidated();
         if (validated && signUp.getUserId() != null){
             User user = signUp.getUser();
@@ -53,7 +59,7 @@ public class SignUpsController extends OtpEnabledController<SignUp> {
 
     protected Map<Class<? extends Model>, List<String>> getIncludedModelFields(boolean validated) {
         Map<Class<? extends Model>,List<String>> map = super.getIncludedModelFields();
-        map.put(SignUp.class, Arrays.asList("ID","PHONE_NUMBER","DEVICE_ID","USER_ID", "VALIDATED"));
+        map.put(SignUp.class, Arrays.asList("ID","PHONE_NUMBER","USER_ID", "VALIDATED"));
         if (validated) {
             map.put(User.class, Arrays.asList("ID", "NAME", "LONG_NAME" , "API_KEY"));
         }
