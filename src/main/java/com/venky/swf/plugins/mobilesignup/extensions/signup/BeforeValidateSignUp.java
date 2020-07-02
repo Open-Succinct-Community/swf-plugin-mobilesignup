@@ -7,6 +7,9 @@ import com.venky.swf.plugins.collab.agents.SendOtp;
 import com.venky.swf.plugins.collab.extensions.beforesave.BeforeValidatePhone;
 import com.venky.swf.plugins.mobilesignup.db.model.SignUp;
 import com.venky.swf.plugins.mobilesignup.db.model.User;
+import com.venky.swf.sql.Expression;
+import com.venky.swf.sql.Operator;
+import com.venky.swf.sql.Select;
 
 public class BeforeValidateSignUp extends BeforeValidatePhone<SignUp> {
     static {
@@ -42,7 +45,7 @@ public class BeforeValidateSignUp extends BeforeValidatePhone<SignUp> {
             user.deactivate();
             user = null;
         }
-        boolean newUser = user == null;
+        boolean newUser = user == null ;
         if (newUser){
             user = Database.getTable(User.class).newRecord();
             user.setPhoneNumber(signUp.getPhoneNumber());
@@ -50,6 +53,13 @@ public class BeforeValidateSignUp extends BeforeValidatePhone<SignUp> {
         user.generateApiKey(false);//Cannot be logged into same account from 2 devices at the same time. Auto logout from other device.
         user.save();
         if (newUser){
+            signUp.setUserId(user.getId());
+        }else if (signUp.getUserId() == null ){
+            SignUp last = SignUp.getRequest(user.getId(),user.getPhoneNumber(),true);
+            if (!last.getRawRecord().isNewRecord()){
+                //No Signup exists for the user.
+                last.destroy();
+            }
             signUp.setUserId(user.getId());
         }
         return user;

@@ -31,7 +31,18 @@ public class SignUpsController extends OtpEnabledController<SignUp> {
     public View validateOtp(long id) throws Exception {
         return super.validateOtp(id, "PHONE_NUMBER");
     }
+    public View otpValidationComplete(SignUp signUp){
+        boolean validated = signUp.isValidated();
+        if (validated && signUp.getUserId() != null){
+            User user = signUp.getUser();
+            if (user != null){
+                getPath().createUserSession(user,false);
+            }
+        }
+        Map<Class<? extends Model>, List<String>> map = getIncludedModelFields(signUp.isValidated());
 
+        return getIntegrationAdaptor().createResponse(getPath(),signUp, map.get(SignUp.class),new HashSet<>(),map);
+    }
     @RequireLogin(false)
     public <T> View register(){
         ensureIntegrationMethod(HttpMethod.POST);
@@ -45,16 +56,7 @@ public class SignUpsController extends OtpEnabledController<SignUp> {
         signUp = Database.getTable(SignUp.class).getRefreshed(signUp);
         signUp.save();
 
-        boolean validated = signUp.isValidated();
-        if (validated && signUp.getUserId() != null){
-            User user = signUp.getUser();
-            if (user != null){
-                getPath().createUserSession(user,false);
-            }
-        }
-        Map<Class<? extends Model>, List<String>> map = getIncludedModelFields(signUp.isValidated());
-
-        return getIntegrationAdaptor().createResponse(getPath(),signUp, map.get(SignUp.class),new HashSet<>(),map);
+        return otpValidationComplete(signUp);
     }
 
     protected Map<Class<? extends Model>, List<String>> getIncludedModelFields(boolean validated) {
