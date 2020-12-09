@@ -39,7 +39,7 @@ public class UserImpl extends ModelImpl<User> {
     public boolean isActive(){
         User user = getProxy();
         Timestamp lastLoginTime =  user.getLastLoginTime();
-        return (lastLoginTime != null &&
+        return (lastLoginTime == null ||
                 DateUtils.compareToMinutes(System.currentTimeMillis(), lastLoginTime.getTime()) < 90 * 24* 60 );
     }
     public void deactivate() {
