@@ -1,6 +1,7 @@
 package com.venky.swf.plugins.mobilesignup.extensions.signup;
 
 import com.venky.core.date.DateUtils;
+import com.venky.core.util.ObjectUtil;
 import com.venky.swf.db.Database;
 import com.venky.swf.plugins.background.core.TaskManager;
 import com.venky.swf.plugins.collab.agents.SendOtp;
@@ -22,7 +23,7 @@ public class BeforeValidateSignUp extends BeforeValidatePhone<SignUp> {
         if (signUp.getRawRecord().isNewRecord() && signUp.isValidated()) {
             //From user phone save.!! pre validated.
             return;
-        }else if (!signUp.isValidated()) {
+        }else if (!signUp.isValidated() && ObjectUtil.isVoid(signUp.getLastOtp())) {
             TaskManager.instance().executeAsync(new SendOtp(signUp),false);
         }else if (signUp.isValidated()) {
             if (signUp.getRawRecord().isFieldDirty("VALIDATED")){
