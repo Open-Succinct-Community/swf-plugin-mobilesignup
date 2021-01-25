@@ -58,6 +58,11 @@ public class BeforeSaveUserPhone extends BeforeModelSaveExtension<UserPhone> {
                     }
                 }
             }
+            User user = model.getUser().getRawRecord().getAsProxy(User.class);
+            if (ObjectUtil.isVoid(user.getPhoneNumber())){
+                user.setPhoneNumber(model.getPhoneNumber());
+                user.save();
+            }
             if (signUp.getRawRecord().isNewRecord()){
                 signUp.setValidated(true);
                 signUp.setUserId(model.getUserId());

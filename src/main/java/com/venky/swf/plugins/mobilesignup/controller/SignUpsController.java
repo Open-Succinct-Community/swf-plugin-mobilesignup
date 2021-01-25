@@ -17,7 +17,8 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 
-public class SignUpsController extends OtpEnabledController<SignUp> {
+public class
+SignUpsController extends OtpEnabledController<SignUp> {
     public SignUpsController(Path path) {
         super(path);
     }

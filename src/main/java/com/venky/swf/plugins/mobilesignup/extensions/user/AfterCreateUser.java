@@ -7,7 +7,6 @@ import com.venky.swf.plugins.collab.db.model.user.UserPhone;
 import com.venky.swf.plugins.mobilesignup.db.model.User;
 import com.venky.swf.plugins.security.db.model.Role;
 import com.venky.swf.plugins.security.db.model.UserRole;
-import com.venky.swf.routing.Config;
 
 public class AfterCreateUser extends AfterModelCreateExtension<User> {
     static{
