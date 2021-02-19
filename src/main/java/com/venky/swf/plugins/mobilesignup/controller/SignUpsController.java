@@ -1,5 +1,6 @@
 package com.venky.swf.plugins.mobilesignup.controller;
 
+import com.venky.core.util.ObjectUtil;
 import com.venky.swf.controller.annotations.RequireLogin;
 import com.venky.swf.db.Database;
 import com.venky.swf.db.model.Model;
@@ -54,7 +55,17 @@ SignUpsController extends OtpEnabledController<SignUp> {
         SignUp signUp = signUpList.get(0);
         signUp.setPhoneNumber(Phone.sanitizePhoneNumber(signUp.getPhoneNumber()));
 
+        String inputPhoneNumber = signUp.getPhoneNumber();
+
         signUp = Database.getTable(SignUp.class).getRefreshed(signUp);
+
+        String persistedPhoneNumber = signUp.getPhoneNumber();
+        if (!signUp.getRawRecord().isNewRecord() && !ObjectUtil.equals(persistedPhoneNumber,inputPhoneNumber)){
+            //Security issue.
+            //Id was same but different phone.!! is possible if a user was deleted. Though only a test scenario. Important  to fix it.
+            signUp = Database.getTable(SignUp.class).newRecord();
+            signUp.setPhoneNumber(inputPhoneNumber);
+        }
         signUp.save();
 
         return otpValidationComplete(signUp);
