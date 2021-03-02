@@ -2,6 +2,7 @@ package com.venky.swf.plugins.mobilesignup.db.model;
 
 import com.venky.swf.db.annotations.column.IS_VIRTUAL;
 import com.venky.swf.db.annotations.column.UNIQUE_KEY;
+import com.venky.swf.db.annotations.column.relationship.CONNECTED_VIA;
 import com.venky.swf.db.annotations.column.ui.HIDDEN;
 
 import java.sql.Timestamp;
@@ -27,5 +28,6 @@ public interface User extends in.succinct.plugins.ecommerce.db.model.participati
     @IS_VIRTUAL
     void deactivate();
 
+    @CONNECTED_VIA("USER_ID")
     public List<SignUp> getSignUps();
 }
