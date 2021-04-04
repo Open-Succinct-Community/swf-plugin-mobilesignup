@@ -27,7 +27,7 @@ public class UserImpl extends ModelImpl<User> {
         List<UserLogin> logins = new Select().from(UserLogin.class).
                 where(new Expression(ModelReflector.instance(UserLogin.class).getPool(),"USER_ID",
                         Operator.EQ,getProxy().getId()))
-                .orderBy("ID DESC").execute(1);
+                .orderBy("USER_ID","ID DESC").execute(1);
         if (logins.isEmpty()){
             return null;
         }else {
