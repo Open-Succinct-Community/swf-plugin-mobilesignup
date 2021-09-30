@@ -4,7 +4,9 @@ import com.venky.swf.db.Database;
 import com.venky.swf.db.JdbcTypeHelper.TypeConverter;
 import com.venky.swf.db.annotations.column.IS_VIRTUAL;
 import com.venky.swf.db.annotations.column.UNIQUE_KEY;
+import com.venky.swf.db.annotations.column.indexing.Index;
 import com.venky.swf.db.annotations.column.relationship.CONNECTED_VIA;
+import com.venky.swf.db.annotations.model.MENU;
 import com.venky.swf.db.model.Model;
 import com.venky.swf.db.model.reflection.ModelReflector;
 import com.venky.swf.plugins.collab.db.model.user.Phone;
@@ -17,12 +19,15 @@ import com.venky.swf.sql.Select;
 
 import java.util.List;
 
+@MENU("Admin")
 public interface SignUp extends Phone, Model {
 
     @UNIQUE_KEY("PHONE")
+    @Index
     String getPhoneNumber();
 
     @UNIQUE_KEY(value = "PHONE",allowMultipleRecordsWithNull = false)
+    @Index
     Long getUserId();
     void setUserId(Long userId);
     User getUser();
