@@ -30,7 +30,7 @@ public class LoginLogger implements Extension {
         String userAgent;
         public UserLoginLogger(Path path, User user){
             this.user = user;
-            remoteHost = path.getRequest().getHeader("X-Real-IP") ;
+            remoteHost = path.getHeader("Real-IP") ;
             if (remoteHost == null){
                 remoteHost = path.getRequest().getRemoteHost();
             }
