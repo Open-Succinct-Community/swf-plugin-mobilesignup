@@ -32,8 +32,7 @@ public class BeforeValidateUser extends BeforeModelValidateExtension<User> {
             model.setName(SequentialNumber.get("USER_ID").next());
         }
 
-
-        if (!model.getRawRecord().isNewRecord() && model.getRawRecord().isFieldDirty("PHONE_NUMBER") && !ObjectUtil.isVoid(model.getPhoneNumber())){
+        if (!model.getRawRecord().isNewRecord() &&  model.getRawRecord().isFieldDirty("PHONE_NUMBER") && model.getRawRecord().getOldValue("PHONE_NUMBER") != null && !ObjectUtil.isVoid(model.getPhoneNumber())){
             Optional<UserPhone> optionalUserPhone = model.getUserPhones().stream().filter(up->ObjectUtil.equals(up.getPhoneNumber(),model.getPhoneNumber())).findFirst();
             if (!optionalUserPhone.isPresent()){
                 throw new RuntimeException ( "Phone needs to verified before you can make it primary.");
@@ -44,7 +43,8 @@ public class BeforeValidateUser extends BeforeModelValidateExtension<User> {
                 }
             }
         }
-        if (!model.getRawRecord().isNewRecord() && model.getRawRecord().isFieldDirty("EMAIL") && !ObjectUtil.isVoid(model.getEmail())){
+
+        if (!model.getRawRecord().isNewRecord() &&  model.getRawRecord().isFieldDirty("EMAIL") && model.getRawRecord().getOldValue("EMAIL") != null && !ObjectUtil.isVoid(model.getEmail())){
             Optional<UserEmail> optionalUserEmail = model.getUserEmails().stream().filter(up->ObjectUtil.equals(up.getEmail(),model.getEmail())).findFirst();
             if (!optionalUserEmail.isPresent()){
                 throw new RuntimeException ( "Email needs to verified before you can make it primary.");
