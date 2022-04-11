@@ -4,11 +4,12 @@
   <parent>
     <groupId>com.github.venkatramanm.swf-all</groupId>
     <artifactId>swf-all</artifactId>
-    <version>2.10</version>
+    <version>2.11-SNAPSHOT</version>
   </parent>
   <artifactId>swf-plugin-mobilesignup</artifactId>
   <name>swf-plugin-mobilesignup</name>
   <description>swf-plugin-mobilesignup</description>
+  <version>2.11-SNAPSHOT</version>
 
   <url>http://maven.apache.org</url>
   <licenses>
@@ -37,7 +38,7 @@
   	<dependency>
         <groupId>${project.groupId}</groupId>
   		  <artifactId>swf-plugin-ecommerce</artifactId>
-          <version>${project.parent.version}</version>
+            <version>[2.10,3.0)</version>
   	</dependency>
   </dependencies>
 </project>
