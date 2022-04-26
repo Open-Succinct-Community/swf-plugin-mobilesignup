@@ -9,7 +9,7 @@
   <artifactId>swf-plugin-mobilesignup</artifactId>
   <name>swf-plugin-mobilesignup</name>
   <description>swf-plugin-mobilesignup</description>
-  <version>2.11-SNAPSHOT</version>
+  <version>2.11</version>
 
   <url>http://maven.apache.org</url>
   <licenses>

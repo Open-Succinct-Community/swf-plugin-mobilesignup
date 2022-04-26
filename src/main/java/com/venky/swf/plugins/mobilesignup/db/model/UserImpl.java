@@ -9,6 +9,8 @@ import com.venky.swf.sql.Conjunction;
 import com.venky.swf.sql.Expression;
 import com.venky.swf.sql.Operator;
 import com.venky.swf.sql.Select;
+import com.venky.swf.db.model.UserLogin;
+
 
 import java.sql.Timestamp;
 import java.util.Iterator;
