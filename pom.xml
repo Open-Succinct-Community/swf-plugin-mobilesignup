@@ -9,7 +9,7 @@
   <artifactId>swf-plugin-mobilesignup</artifactId>
   <name>swf-plugin-mobilesignup</name>
   <description>swf-plugin-mobilesignup</description>
-  <version>2.12-SNAPSHOT</version>
+  <version>2.13-SNAPSHOT</version>
 
   <url>http://maven.apache.org</url>
   <licenses>
@@ -37,8 +37,14 @@
   <dependencies>
   	<dependency>
         <groupId>${project.groupId}</groupId>
-  		  <artifactId>swf-plugin-ecommerce</artifactId>
+  		  <artifactId>swf-plugin-collab</artifactId>
             <version>[2.10,3.0)</version>
   	</dependency>
+    <dependency>
+      <groupId>${project.groupId}</groupId>
+      <artifactId>swf-plugin-audit</artifactId>
+      <version>[2.10,3.0)</version>
+    </dependency>
+
   </dependencies>
 </project>

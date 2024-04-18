@@ -55,13 +55,5 @@ public class BeforeValidateUser extends BeforeModelValidateExtension<User> {
                 }
             }
         }
-        if (ObjectUtil.isVoid(model.getLastPrimaryPhoneNumber())){
-            model.setLastPrimaryPhoneNumber(model.getPhoneNumber());
-        }else if (model.getRawRecord().isFieldDirty("PHONE_NUMBER")){
-            String oldPhoneNumber = StringUtil.valueOf(model.getRawRecord().getOldValue("PHONE_NUMBER"));
-            if (!ObjectUtil.isVoid(oldPhoneNumber)){
-                model.setLastPrimaryPhoneNumber(model.getPhoneNumber());
-            }
-        }
     }
 }

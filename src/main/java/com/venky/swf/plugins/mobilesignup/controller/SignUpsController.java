@@ -4,6 +4,7 @@ import com.venky.core.util.ObjectUtil;
 import com.venky.swf.controller.annotations.RequireLogin;
 import com.venky.swf.db.Database;
 import com.venky.swf.db.model.Model;
+import com.venky.swf.db.model.reflection.ModelReflector;
 import com.venky.swf.integration.IntegrationAdaptor;
 import com.venky.swf.integration.api.HttpMethod;
 import com.venky.swf.path.Path;
@@ -18,20 +19,19 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 
-public class
-SignUpsController extends OtpEnabledController<SignUp> {
+public class SignUpsController extends OtpEnabledController<SignUp> {
     public SignUpsController(Path path) {
         super(path);
     }
 
     @RequireLogin(false)
     public View sendOtp(long id) {
-        return super.sendOtp(id, "PHONE_NUMBER");
+        return super.sendOtp(id, SignUp.getSignUpKey());
     }
 
     @RequireLogin(false)
     public View validateOtp(long id) throws Exception {
-        return super.validateOtp(id, "PHONE_NUMBER");
+        return super.validateOtp(id, SignUp.getSignUpKey());
     }
     public View otpValidationComplete(SignUp signUp){
         boolean validated = signUp.isValidated();
@@ -46,34 +46,36 @@ SignUpsController extends OtpEnabledController<SignUp> {
         return getIntegrationAdaptor().createResponse(getPath(),signUp, map.get(SignUp.class),new HashSet<>(),map);
     }
     @RequireLogin(false)
-    public <T> View register(){
+    @Override
+    public View register(){
         ensureIntegrationMethod(HttpMethod.POST);
         List<SignUp> signUpList = getIntegrationAdaptor().readRequest(getPath());
         if (signUpList.size() != 1){
             throw new RuntimeException("Parameter not correct. Parameter must be a single SignUp element");
         }
         SignUp signUp = signUpList.get(0);
-        signUp.setPhoneNumber(Phone.sanitizePhoneNumber(signUp.getPhoneNumber()));
-
-        String inputPhoneNumber = signUp.getPhoneNumber();
-
+        String signUpKey = SignUp.getSignUpKey();
+        String signUpKeyValue = ModelReflector.instance(SignUp.class).get(signUp,signUpKey);
+        if (SignUp.isSignUpKeyPhoneNumber()){
+            signUp.setEmail(null);
+        }else {
+            signUp.setPhoneNumber(null);
+        }
         signUp = Database.getTable(SignUp.class).getRefreshed(signUp);
-
-        String persistedPhoneNumber = signUp.getPhoneNumber();
-        if (!signUp.getRawRecord().isNewRecord() && !ObjectUtil.equals(persistedPhoneNumber,inputPhoneNumber)){
+        String persistedSignUpKeyValue = ModelReflector.instance(SignUp.class).get(signUp,signUpKey);
+        if (!signUp.getRawRecord().isNewRecord() && !ObjectUtil.equals(persistedSignUpKeyValue,signUpKeyValue)){
             //Security issue.
             //Id was same but different phone.!! is possible if a user was deleted. Though only a test scenario. Important  to fix it.
             signUp = Database.getTable(SignUp.class).newRecord();
-            signUp.setPhoneNumber(inputPhoneNumber);
+            signUp.getReflector().set(signUp,signUpKey,signUpKeyValue);
         }
         signUp.save();
-
         return otpValidationComplete(signUp);
     }
 
     protected Map<Class<? extends Model>, List<String>> getIncludedModelFields(boolean validated) {
         Map<Class<? extends Model>,List<String>> map = super.getIncludedModelFields();
-        map.put(SignUp.class, Arrays.asList("ID","PHONE_NUMBER","USER_ID", "VALIDATED"));
+        map.put(SignUp.class, Arrays.asList("ID","PHONE_NUMBER","EMAIL","USER_ID", "VALIDATED"));
         if (validated) {
             map.put(User.class, Arrays.asList("ID", "NAME", "LONG_NAME" , "API_KEY"));
         }

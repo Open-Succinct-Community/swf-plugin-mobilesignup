@@ -30,17 +30,20 @@ public class BeforeSaveUserPhone extends BeforeModelSaveExtension<UserPhone> {
     @Override
     public void beforeSave(UserPhone model) {
         model.setPhoneNumber(Phone.sanitizePhoneNumber(model.getPhoneNumber()));
-        SignUp signUp = SignUp.getRequest(model.getUserId(),model.getPhoneNumber(), false);
+        SignUp signUp = null;
+        if (SignUp.isSignUpKeyPhoneNumber()) {
+            signUp = SignUp.getRequest(model.getUserId(), model.getPhoneNumber(), false);
 
-        if (!model.isValidated()){
-            model.setValidated(signUp != null && !signUp.getRawRecord().isNewRecord()
-                && signUp.isValidated());
+            if (!model.isValidated()) {
+                model.setValidated(signUp != null && !signUp.getRawRecord().isNewRecord()
+                        && signUp.isValidated());
+            }
         }
-
-        if (!model.isValidated() && ObjectUtil.isVoid(model.getLastOtp())){
+        boolean isUserSignedUp = !model.getUser().getRawRecord().getAsProxy(User.class).getSignUps().isEmpty();
+        if (!model.isValidated() && ObjectUtil.isVoid(model.getLastOtp()) && isUserSignedUp){
             TaskManager.instance().executeAsync(new SendOtp(model),false);
         }
-        
+
         if (model.isValidated() && model.getRawRecord().isFieldDirty("VALIDATED")){
             Expression expression = new Expression(getPool(), Conjunction.AND);
             expression.add(new Expression(getPool(), "phone_number", Operator.IN, model.getPhoneNumber()));
@@ -63,10 +66,10 @@ public class BeforeSaveUserPhone extends BeforeModelSaveExtension<UserPhone> {
                 user.setPhoneNumber(model.getPhoneNumber());
                 user.save();
             }
-            if (signUp.getRawRecord().isNewRecord()){
+            if (signUp != null && signUp.getRawRecord().isNewRecord()){
                 signUp.setValidated(true);
                 signUp.setUserId(model.getUserId());
-                signUp.save();
+                signUp.save(); //Pretend to signp with this phonenumber also
             }
         }
     }

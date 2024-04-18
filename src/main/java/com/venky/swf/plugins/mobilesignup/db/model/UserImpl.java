@@ -2,20 +2,21 @@ package com.venky.swf.plugins.mobilesignup.db.model;
 
 import com.venky.core.date.DateUtils;
 import com.venky.core.util.ObjectUtil;
+import com.venky.swf.db.model.Model;
+import com.venky.swf.db.model.UserEmail;
+import com.venky.swf.db.model.UserLogin;
 import com.venky.swf.db.model.reflection.ModelReflector;
 import com.venky.swf.db.table.ModelImpl;
+import com.venky.swf.plugins.collab.db.model.user.OtpEnabled;
 import com.venky.swf.plugins.collab.db.model.user.UserPhone;
-import com.venky.swf.sql.Conjunction;
 import com.venky.swf.sql.Expression;
 import com.venky.swf.sql.Operator;
 import com.venky.swf.sql.Select;
-import com.venky.swf.db.model.UserLogin;
-
 
 import java.sql.Timestamp;
+import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
-import java.util.Optional;
 
 public class UserImpl extends ModelImpl<User> {
     public UserImpl(){
@@ -44,22 +45,34 @@ public class UserImpl extends ModelImpl<User> {
         return (lastLoginTime == null ||
                 DateUtils.compareToMinutes(System.currentTimeMillis(), lastLoginTime.getTime()) < 90 * 24* 60 );
     }
-    public void deactivate() {
+
+    public <T extends Model & OtpEnabled> void deactivate() {
         User user = getProxy();
-        String phoneNumber = user.getPhoneNumber();
-        if (ObjectUtil.isVoid(phoneNumber)){
+
+        ModelReflector<User> userRef = ModelReflector.instance(User.class);
+        String signUpKey = SignUp.getSignUpKey();
+        String signUpKeyValue = userRef.get(user,signUpKey);
+        if (ObjectUtil.isVoid(signUpKeyValue)){
             return;
         }
-        user.setPhoneNumber(null);
 
-        List<UserPhone> userPhones = user.getUserPhones();
-        for (Iterator<UserPhone> i = userPhones.iterator() ; i.hasNext(); ){
-            UserPhone  up = i.next();
-            if (ObjectUtil.equals(up.getPhoneNumber(),phoneNumber)){
-                up.destroy();
-            }else if (up.isValidated()){
-                user.setPhoneNumber(up.getPhoneNumber());
-                break;
+        userRef.set(user,SignUp.getSignUpKey(),null);
+        List<OtpEnabled> registeredSignUpKeys = new ArrayList<>();
+
+        ModelReflector<? extends OtpEnabled> otpEnableRef = null;
+        if (SignUp.isSignUpKeyPhoneNumber()){
+            otpEnableRef = ModelReflector.instance(UserPhone.class);
+            registeredSignUpKeys.addAll(user.getUserPhones());
+        }else {
+            otpEnableRef = ModelReflector.instance(com.venky.swf.plugins.collab.db.model.user.UserEmail.class);
+            user.getUserEmails().forEach(ue->registeredSignUpKeys.add(ue.getRawRecord().getAsProxy(com.venky.swf.plugins.collab.db.model.user.UserEmail.class)));
+        }
+        for (OtpEnabled aKey : registeredSignUpKeys){
+            String aSignUpKeyValue = otpEnableRef.get(aKey,signUpKey);
+            if (ObjectUtil.equals(signUpKeyValue,aSignUpKeyValue)){
+                ((Model)aKey).destroy();
+            }else if (aKey.isValidated()) {
+                userRef.set(user, signUpKey, aSignUpKeyValue);
             }
         }
         user.save();

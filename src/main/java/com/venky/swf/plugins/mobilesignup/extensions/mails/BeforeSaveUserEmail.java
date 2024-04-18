@@ -26,8 +26,18 @@ public class BeforeSaveUserEmail extends BeforeModelSaveExtension<UserEmail> {
 
     @Override
     public void beforeSave(UserEmail model) {
+        SignUp signUp = null;
+        if (!SignUp.isSignUpKeyPhoneNumber()) {
+            signUp = SignUp.getRequest(model.getUserId(), model.getEmail(), false);
 
-        if (!model.isValidated() && ObjectUtil.isVoid(model.getLastOtp())){
+            if (!model.isValidated()) {
+                model.setValidated(signUp != null && !signUp.getRawRecord().isNewRecord()
+                        && signUp.isValidated());
+            }
+        }
+        boolean isUserSignedUp = !model.getUser().getRawRecord().getAsProxy(User.class).getSignUps().isEmpty();
+
+        if (!model.isValidated() && ObjectUtil.isVoid(model.getLastOtp()) && isUserSignedUp){
             TaskManager.instance().executeAsync(new SendOtp(model),false);
         }
         
@@ -48,6 +58,17 @@ public class BeforeSaveUserEmail extends BeforeModelSaveExtension<UserEmail> {
                     }
                 }
             }
+            User user = model.getUser().getRawRecord().getAsProxy(User.class);
+            if (ObjectUtil.isVoid(user.getEmail())){
+                user.setEmail(model.getEmail());
+                user.save();
+            }
+            if (signUp != null && signUp.getRawRecord().isNewRecord()){
+                signUp.setValidated(true);
+                signUp.setUserId(model.getUserId());
+                signUp.save(); //Pretend to signp with this email also
+            }
+
         }
     }
 }
