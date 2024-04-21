@@ -23,7 +23,6 @@ import com.venky.swf.sql.Select;
 
 import java.util.List;
 
-@MENU("Admin")
 public interface SignUp extends Phone, Email,Model {
 
     @UNIQUE_KEY(value = "SIGNUP_KEY",allowMultipleRecordsWithNull = false)
