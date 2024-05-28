@@ -11,6 +11,7 @@ import com.venky.swf.db.annotations.column.relationship.CONNECTED_VIA;
 import com.venky.swf.db.annotations.model.MENU;
 import com.venky.swf.db.model.Model;
 import com.venky.swf.db.model.reflection.ModelReflector;
+import com.venky.swf.plugins.collab.db.model.config.WorldLanguage;
 import com.venky.swf.plugins.collab.db.model.user.Email;
 import com.venky.swf.plugins.collab.db.model.user.Phone;
 import com.venky.swf.plugins.collab.db.model.user.PhoneImpl;
@@ -91,6 +92,10 @@ public interface SignUp extends Phone, Email,Model {
             return signUps.get(0);
         }
     }
+
+    public Long getWorldLanguageId();
+    public void setWorldLanguageId(Long id);
+    public WorldLanguage getWorldLanguage();
 
     static String getSignUpKey(){
         return Config.instance().getProperty("swf.signup.key","PHONE_NUMBER"); //Default behaviour
