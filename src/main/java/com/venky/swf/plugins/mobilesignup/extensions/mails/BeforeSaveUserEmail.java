@@ -37,8 +37,12 @@ public class BeforeSaveUserEmail extends BeforeModelSaveExtension<UserEmail> {
         }
         boolean isUserSignedUp = !model.getUser().getRawRecord().getAsProxy(User.class).getSignUps().isEmpty();
 
-        if (!model.isValidated() && ObjectUtil.isVoid(model.getLastOtp()) && isUserSignedUp){
-            TaskManager.instance().executeAsync(new SendOtp(model),false);
+        if (!model.isValidated() && ObjectUtil.isVoid(model.getLastOtp()) ){
+            if (isUserSignedUp) {
+                TaskManager.instance().executeAsync(new SendOtp(model), false);
+            }else {
+                model.setValidated(true);
+            }
         }
         
         if (model.isValidated() && model.getRawRecord().isFieldDirty("VALIDATED")){
