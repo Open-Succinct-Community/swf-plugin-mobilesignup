@@ -63,11 +63,15 @@ public class SignUpsController extends OtpEnabledController<SignUp> {
         }
         signUp = Database.getTable(SignUp.class).getRefreshed(signUp);
         String persistedSignUpKeyValue = ModelReflector.instance(SignUp.class).get(signUp,signUpKey);
-        if (!signUp.getRawRecord().isNewRecord() && !ObjectUtil.equals(persistedSignUpKeyValue,signUpKeyValue)){
-            //Security issue.
-            //Id was same but different phone.!! is possible if a user was deleted. Though only a test scenario. Important  to fix it.
-            signUp = Database.getTable(SignUp.class).newRecord();
-            signUp.getReflector().set(signUp,signUpKey,signUpKeyValue);
+        if (!signUp.getRawRecord().isNewRecord()){
+            if ( !ObjectUtil.equals(persistedSignUpKeyValue,signUpKeyValue)) {
+                //Security issue.
+                //Id was same but different phone.!! is possible if a user was deleted. Though only a test scenario. Important  to fix it.
+                signUp = Database.getTable(SignUp.class).newRecord();
+                signUp.getReflector().set(signUp, signUpKey, signUpKeyValue);
+            }else {
+                throw new RuntimeException(String.format("%s already registered",signUpKey));
+            }
         }
         signUp.save();
         return otpValidationComplete(signUp);
