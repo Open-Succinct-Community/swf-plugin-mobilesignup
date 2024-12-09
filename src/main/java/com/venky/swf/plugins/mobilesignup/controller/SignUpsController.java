@@ -69,8 +69,11 @@ public class SignUpsController extends OtpEnabledController<SignUp> {
                 //Id was same but different phone.!! is possible if a user was deleted. Though only a test scenario. Important  to fix it.
                 signUp = Database.getTable(SignUp.class).newRecord();
                 signUp.getReflector().set(signUp, signUpKey, signUpKeyValue);
-            }else {
+            }else if (signUp.getUserId() != null){
                 throw new RuntimeException(String.format("%s already registered",signUpKey));
+            }else {
+                signUp.setValidated(false);
+                signUp.setLastOtp(null); //Re sign in.
             }
         }
         signUp.save();
