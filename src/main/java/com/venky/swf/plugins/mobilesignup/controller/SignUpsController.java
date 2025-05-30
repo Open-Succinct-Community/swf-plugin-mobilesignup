@@ -56,6 +56,8 @@ public class SignUpsController extends OtpEnabledController<SignUp> {
         SignUp signUp = signUpList.get(0);
         String signUpKey = SignUp.getSignUpKey();
         String signUpKeyValue = ModelReflector.instance(SignUp.class).get(signUp,signUpKey);
+        boolean signUpIdPassed = (signUp.getId() > 0) ;
+        
         if (SignUp.isSignUpKeyPhoneNumber()){
             signUp.setEmail(null);
         }else {
@@ -70,7 +72,9 @@ public class SignUpsController extends OtpEnabledController<SignUp> {
                 signUp = Database.getTable(SignUp.class).newRecord();
                 signUp.getReflector().set(signUp, signUpKey, signUpKeyValue);
             }else if (signUp.getUserId() != null){
-                throw new RuntimeException(String.format("%s already registered",signUpKey));
+                if (!signUpIdPassed) {
+                    throw new RuntimeException(String.format("%s already registered", signUpKey));
+                }
             }else {
                 signUp.setValidated(false);
                 signUp.setLastOtp(null); //Re sign in.
