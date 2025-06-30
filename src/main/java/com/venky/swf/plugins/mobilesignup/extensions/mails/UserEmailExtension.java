@@ -1,6 +1,7 @@
 package com.venky.swf.plugins.mobilesignup.extensions.mails;
 
 import com.venky.core.util.ObjectUtil;
+import com.venky.swf.db.Database;
 import com.venky.swf.db.extensions.BeforeModelSaveExtension;
 import com.venky.swf.db.extensions.ModelOperationExtension;
 import com.venky.swf.plugins.collab.db.model.user.UserEmail;
@@ -58,6 +59,7 @@ public class UserEmailExtension extends ModelOperationExtension<UserEmail> {
             if (signUp != null && signUp.getRawRecord().isNewRecord()){
                 signUp.setValidated(true);
                 signUp.setUserId(model.getUserId());
+                signUp = Database.getTable(SignUp.class).getRefreshed(signUp);
                 signUp.save(); //Pretend to signp with this email also
             }
 
