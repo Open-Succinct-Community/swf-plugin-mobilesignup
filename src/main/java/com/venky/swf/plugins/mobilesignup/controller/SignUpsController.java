@@ -1,10 +1,12 @@
 package com.venky.swf.plugins.mobilesignup.controller;
 
+import com.venky.core.collections.IgnoreCaseSet;
 import com.venky.core.util.ObjectUtil;
 import com.venky.swf.controller.annotations.RequireLogin;
 import com.venky.swf.db.Database;
 import com.venky.swf.db.model.Model;
 import com.venky.swf.db.model.reflection.ModelReflector;
+import com.venky.swf.integration.FormatHelper;
 import com.venky.swf.integration.IntegrationAdaptor;
 import com.venky.swf.integration.api.HttpMethod;
 import com.venky.swf.path.Path;
@@ -13,11 +15,15 @@ import com.venky.swf.plugins.collab.db.model.user.Phone;
 import com.venky.swf.plugins.mobilesignup.db.model.SignUp;
 import com.venky.swf.plugins.mobilesignup.db.model.User;
 import com.venky.swf.views.View;
+import in.succinct.json.JSONAwareWrapper;
+import org.json.simple.JSONObject;
+import org.json.simple.JSONValue;
 
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 public class SignUpsController extends OtpEnabledController<SignUp> {
     public SignUpsController(Path path) {
@@ -47,8 +53,11 @@ public class SignUpsController extends OtpEnabledController<SignUp> {
     }
     @RequireLogin(false)
     @Override
-    public View register(){
+    public View register() {
         ensureIntegrationMethod(HttpMethod.POST);
+        JSONObject object = JSONAwareWrapper.parse(getPath().getInputStream());
+        Set<String> keys = new IgnoreCaseSet();
+        keys.addAll(object.keySet());
         List<SignUp> signUpList = getIntegrationAdaptor().readRequest(getPath());
         if (signUpList.size() != 1){
             throw new RuntimeException("Parameter not correct. Parameter must be a single SignUp element");
@@ -56,7 +65,7 @@ public class SignUpsController extends OtpEnabledController<SignUp> {
         SignUp signUp = signUpList.get(0);
         String signUpKey = SignUp.getSignUpKey();
         String signUpKeyValue = ModelReflector.instance(SignUp.class).get(signUp,signUpKey);
-        boolean signUpIdPassed = (signUp.getId() > 0) ;
+        boolean signUpIdPassed = keys.contains("Id");
         
         if (SignUp.isSignUpKeyPhoneNumber()){
             signUp.setEmail(null);
